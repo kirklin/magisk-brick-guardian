@@ -33,6 +33,7 @@ jobs:
           cp action.sh temp_module/
           cp brick_guardian_early.sh temp_module/
           cp brick_guardian_late.sh temp_module/
+          cp common.sh temp_module/
           cp 白名单.conf temp_module/
           
           # 创建zip包

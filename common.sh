@@ -257,6 +257,94 @@ update_rescue_stats() {
     return 0
 }
 
+# ==================== 嫌疑模块追踪 ====================
+
+# 保存当前模块列表为"已知正常"（每次成功开机后调用）
+# 需要调用方已设置: MODDIR
+save_good_modules() {
+    local good_list="$MODDIR/good_modules.list"
+    bg_log_info "保存已知正常模块列表..."
+
+    if [ ! -d "/data/adb/modules" ]; then
+        bg_log_warning "modules目录不存在，跳过保存"
+        return 1
+    fi
+
+    # 列出所有已启用的模块ID（排除被禁用的）
+    local temp_list="${good_list}.tmp"
+    rm -f "$temp_list"
+    for module_dir in /data/adb/modules/*; do
+        [ -d "$module_dir" ] || continue
+        [ -f "$module_dir/disable" ] && continue
+        basename "$module_dir" >> "$temp_list"
+    done
+
+    if [ -f "$temp_list" ]; then
+        mv -f "$temp_list" "$good_list"
+        sync
+        local count
+        count=$(wc -l < "$good_list" | tr -d ' ')
+        bg_log_info "已保存 $count 个正常模块"
+    else
+        # 没有模块，写空文件
+        > "$good_list"
+        sync
+        bg_log_info "已保存空模块列表"
+    fi
+    return 0
+}
+
+# 检测嫌疑模块：对比当前模块列表和上次成功启动时的列表
+# 结果写入 $MODDIR/suspect_modules.log
+# 需要调用方已设置: MODDIR, MODID
+detect_suspect_modules() {
+    local good_list="$MODDIR/good_modules.list"
+    local suspect_log="$MODDIR/suspect_modules.log"
+    bg_log_info "开始检测嫌疑模块..."
+
+    rm -f "$suspect_log"
+
+    if [ ! -f "$good_list" ]; then
+        bg_log_warning "无历史模块列表，无法对比（首次救砖）"
+        echo "unknown" > "$suspect_log"
+        return 1
+    fi
+
+    local suspect_count=0
+    for module_dir in /data/adb/modules/*; do
+        [ -d "$module_dir" ] || continue
+        local module
+        module=$(basename "$module_dir")
+        [ "$module" = "$MODID" ] && continue
+
+        # 如果模块不在 good_list 里，它就是嫌疑人
+        if ! grep -qx "$module" "$good_list"; then
+            bg_log_warning "🔍 嫌疑模块（新增）: $module"
+            echo "$module" >> "$suspect_log"
+            suspect_count=$((suspect_count + 1))
+        fi
+    done
+
+    if [ $suspect_count -eq 0 ]; then
+        bg_log_info "未检测到新增模块，可能是已有模块更新导致"
+        # 列出所有非自身模块作为参考
+        for module_dir in /data/adb/modules/*; do
+            [ -d "$module_dir" ] || continue
+            local module
+            module=$(basename "$module_dir")
+            [ "$module" = "$MODID" ] && continue
+            echo "?$module" >> "$suspect_log"
+        done
+        bg_log_info "已将所有模块列为参考（带 ? 前缀）"
+    else
+        bg_log_info "共检测到 $suspect_count 个嫌疑模块"
+    fi
+
+    return 0
+}
+
+# ==================== 脚本检查 ====================
+
 # 检查脚本文件是否存在、可执行、非空
 check_script() {
     local script=$1

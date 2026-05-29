@@ -78,6 +78,20 @@ else
     echo "ℹ 已救砖次数: 0"
 fi
 
+# 显示嫌疑模块
+SUSPECT_LOG=$MODDIR/suspect_modules.log
+if [ -f "$SUSPECT_LOG" ]; then
+    suspects=$(grep -v '^?' "$SUSPECT_LOG" | grep -v '^unknown$' | tr '\n' ',' | sed 's/,$//')
+    if [ -n "$suspects" ]; then
+        echo "⚠ 上次救砖嫌疑模块: $suspects"
+    else
+        unclear=$(grep '^?' "$SUSPECT_LOG" | sed 's/^?//' | tr '\n' ',' | sed 's/,$//')
+        if [ -n "$unclear" ]; then
+            echo "ℹ 上次救砖未检测到新增模块，可能是更新导致"
+        fi
+    fi
+fi
+
 # 显示启动次数
 if [ -f "$START_LOG" ]; then
     start_count=$(cat "$START_LOG" 2>/dev/null || echo "0")
@@ -110,6 +124,8 @@ cp -f "$MODDIR/startup_count.log" /sdcard/brick_guardian_logs/ 2>/dev/null
 cp -f "$MODDIR/rescue_count.log" /sdcard/brick_guardian_logs/ 2>/dev/null
 cp -f "$MODDIR/now_version" /sdcard/brick_guardian_logs/ 2>/dev/null
 cp -f "$MODDIR/module.prop" /sdcard/brick_guardian_logs/ 2>/dev/null
+cp -f "$MODDIR/suspect_modules.log" /sdcard/brick_guardian_logs/ 2>/dev/null
+cp -f "$MODDIR/good_modules.list" /sdcard/brick_guardian_logs/ 2>/dev/null
 echo "✓ 日志已导出，可用 adb pull /sdcard/brick_guardian_logs/ 拉取"
 
 echo "====================================="

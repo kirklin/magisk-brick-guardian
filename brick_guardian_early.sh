@@ -64,6 +64,7 @@ early_main() {
     case $BOOT_COUNT in
         3)
             bg_log_warning "第三次启动：准备禁用所有模块"
+            detect_suspect_modules
             disable_script_dirs
             update_rescue_stats
             disable_all_modules "早期"

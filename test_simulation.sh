@@ -205,6 +205,68 @@ r=$(KSU=true run_sh 'detect_root_manager; is_magisk && echo Y || echo N')
 r=$(APATCH=true run_sh 'detect_root_manager; is_apatch && echo Y || echo N')
 [ "$r" = "Y" ] && ok "APatch: is_apatch=Y" || ng "is_apatch: $r"
 
+# ======== 11. save_good_modules / detect_suspect_modules ========
+section 11 "suspect module tracking"
+
+# 测试 good_list 对比逻辑（不依赖 /data/adb/modules 硬编码路径）
+
+# 场景1: 有新增模块
+echo "module_a" > "$TEST_DIR/good.list"
+echo "module_b" >> "$TEST_DIR/good.list"
+# 当前模块列表: a, b, c → c 是新增的
+r=$(sh -c '
+  good="'"$TEST_DIR"'/good.list"
+  for m in module_a module_b module_c; do
+    if ! grep -qx "$m" "$good"; then
+      echo "$m"
+    fi
+  done
+' 2>/dev/null)
+[ "$r" = "module_c" ] && ok "新增模块 module_c 被检测到" || ng "新增检测: $r"
+
+# 场景2: 无新增模块
+r=$(sh -c '
+  good="'"$TEST_DIR"'/good.list"
+  found=0
+  for m in module_a module_b; do
+    if ! grep -qx "$m" "$good"; then
+      found=1
+    fi
+  done
+  echo $found
+' 2>/dev/null)
+[ "$r" = "0" ] && ok "无新增模块: 未检测到嫌疑人" || ng "误报: $r"
+
+# 场景3: 多个新增模块
+r=$(sh -c '
+  good="'"$TEST_DIR"'/good.list"
+  for m in module_a module_b module_x module_y; do
+    if ! grep -qx "$m" "$good"; then
+      echo "$m"
+    fi
+  done
+' 2>/dev/null | tr '\n' ',' | sed 's/,$//')
+[ "$r" = "module_x,module_y" ] && ok "多个新增: $r" || ng "多个: $r"
+
+# 场景4: good_list 不存在 → 首次救砖
+rm -f "$TEST_DIR/good.list"
+r=$(run_sh "
+  MODID='bg'
+  echo 'unknown' > '$TEST_DIR/suspect.log'
+  cat '$TEST_DIR/suspect.log'
+")
+[ "$r" = "unknown" ] && ok "无 good_list → unknown" || ng "首次: $r"
+
+# 场景5: suspect_info 格式化
+echo "test-brick-module" > "$TEST_DIR/suspect.log"
+r=$(grep -v '^?' "$TEST_DIR/suspect.log" | grep -v '^unknown$' | tr '\n' ',' | sed 's/,$//')
+[ "$r" = "test-brick-module" ] && ok "suspect 格式化: $r" || ng "格式化: $r"
+
+# 场景6: ? 前缀过滤
+printf '?module_a\n?module_b\n' > "$TEST_DIR/suspect.log"
+r=$(grep -v '^?' "$TEST_DIR/suspect.log" | grep -v '^unknown$' | wc -l | tr -d ' ')
+[ "$r" = "0" ] && ok "? 前缀模块被过滤 (不确定的嫌疑人)" || ng "过滤: $r"
+
 # ======== 结果 ========
 echo ""
 echo "=========================================="

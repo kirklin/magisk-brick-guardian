@@ -18,12 +18,24 @@ BOOT_WAIT_TIME=1.5
 BG_LOG_FILE_SAVED="$BG_LOG_FILE"
 BG_LOG_FILE=$MODDIR/brick_guardian_late_debug.log
 
-# 更新模块描述（显示救砖次数）
+# 更新模块描述（显示救砖次数和嫌疑模块）
 update_module_description() {
     local rescue_count=$1
     bg_log_info "更新模块描述，当前救砖次数: $rescue_count"
 
-    local description="自动救砖条件：系统连续重启到3次或卡在开机界面${BOOT_WAIT_TIME}分钟(每次OTA升级系统时将自动延长时间至15分钟)，将禁用所有模块。若再不开机会执行APP解冻救砖模式再开机。模块目录/白名单.conf里可以添加救砖跳过的白名单。GitHub: https://github.com/kirklin/magisk-brick-guardian 已为您自动救砖：${rescue_count}次。"
+    # 读取嫌疑模块信息
+    local suspect_info=""
+    local suspect_log="$MODDIR/suspect_modules.log"
+    if [ -f "$suspect_log" ]; then
+        local suspects
+        # 过滤 ? 前缀（仅显示确定的嫌疑人）
+        suspects=$(grep -v '^?' "$suspect_log" | grep -v '^unknown$' | tr '\n' ',' | sed 's/,$//')
+        if [ -n "$suspects" ]; then
+            suspect_info=" 上次救砖嫌疑模块: ${suspects}。"
+        fi
+    fi
+
+    local description="自动救砖条件：系统连续重启到3次或卡在开机界面${BOOT_WAIT_TIME}分钟(每次OTA升级系统时将自动延长时间至15分钟)，将禁用所有模块。若再不开机会执行APP解冻救砖模式再开机。模块目录/白名单.conf里可以添加救砖跳过的白名单。GitHub: https://github.com/kirklin/magisk-brick-guardian 已为您自动救砖：${rescue_count}次。${suspect_info}"
 
     local temp_file="${MODULE_INFO}.tmp"
     if ! sed "/^description=/c description=$description" "$MODULE_INFO" > "$temp_file"; then
@@ -87,15 +99,20 @@ late_main() {
         fi
 
         # 更新系统版本记录
-        local current_version=$(getprop ro.system.build.version.incremental)
+        local current_version
+        current_version=$(getprop ro.system.build.version.incremental)
         if ! safe_write "$VERSION_FILE" "$current_version"; then
             bg_log_error "更新系统版本记录失败"
         else
             bg_log_info "系统版本记录已更新: $current_version"
         fi
+
+        # 保存当前模块列表为"已知正常"
+        save_good_modules
     else
         # 系统未能正常启动
         bg_log_warning "系统未能正常启动，准备执行救砖操作"
+        detect_suspect_modules
         update_rescue_stats
         disable_all_modules "后期"
     fi

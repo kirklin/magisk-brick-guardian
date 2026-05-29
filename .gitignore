@@ -126,3 +126,6 @@ crashlytics.properties
 crashlytics-build.properties
 fabric.properties
 
+test-brick-module.zip
+phone_logs/
+.idea/

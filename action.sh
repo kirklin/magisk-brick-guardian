@@ -102,6 +102,16 @@ else
     echo "日志文件不存在"
 fi
 
+echo "-------------------------------------"
+echo "导出日志到 /sdcard/brick_guardian_logs/ ..."
+mkdir -p /sdcard/brick_guardian_logs
+cp -f "$MODDIR"/*.log /sdcard/brick_guardian_logs/ 2>/dev/null
+cp -f "$MODDIR/startup_count.log" /sdcard/brick_guardian_logs/ 2>/dev/null
+cp -f "$MODDIR/rescue_count.log" /sdcard/brick_guardian_logs/ 2>/dev/null
+cp -f "$MODDIR/now_version" /sdcard/brick_guardian_logs/ 2>/dev/null
+cp -f "$MODDIR/module.prop" /sdcard/brick_guardian_logs/ 2>/dev/null
+echo "✓ 日志已导出，可用 adb pull /sdcard/brick_guardian_logs/ 拉取"
+
 echo "====================================="
 echo "  感谢使用 Brick Guardian！"
 echo "====================================="

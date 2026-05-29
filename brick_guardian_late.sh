@@ -35,7 +35,7 @@ update_module_description() {
         fi
     fi
 
-    local description="自动救砖条件：系统连续重启到3次或卡在开机界面${BOOT_WAIT_TIME}分钟(每次OTA升级系统时将自动延长时间至15分钟)，将禁用所有模块。若再不开机会执行APP解冻救砖模式再开机。模块目录/白名单.conf里可以添加救砖跳过的白名单。GitHub: https://github.com/kirklin/magisk-brick-guardian 已为您自动救砖：${rescue_count}次。${suspect_info}"
+    local description="渐进式救砖：第3次重启精准禁用嫌疑模块→第4次禁用全部模块→卡开机界面${BOOT_WAIT_TIME}分钟也会触发救砖(OTA后延长至15分钟)→第6次执行APP解冻。模块目录/白名单.conf可添加跳过白名单。GitHub: https://github.com/kirklin/magisk-brick-guardian 已为您自动救砖：${rescue_count}次。${suspect_info}"
 
     local temp_file="${MODULE_INFO}.tmp"
     if ! sed "/^description=/c description=$description" "$MODULE_INFO" > "$temp_file"; then

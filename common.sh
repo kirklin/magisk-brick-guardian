@@ -257,6 +257,49 @@ update_rescue_stats() {
     return 0
 }
 
+# 仅禁用嫌疑模块（精准救砖）
+# 检测新增/新启用的模块并仅禁用它们
+# 返回 0 = 成功执行了精准禁用, 返回 1 = 无法识别嫌疑人（需 fallback 全禁用）
+# 需要调用方已设置: MODDIR, MODID, WHITELIST_FILE
+disable_suspect_only() {
+    local suspect_log="$MODDIR/suspect_modules.log"
+
+    detect_suspect_modules
+
+    if [ ! -f "$suspect_log" ]; then
+        bg_log_warning "嫌疑模块检测失败"
+        return 1
+    fi
+
+    # 读取确定的嫌疑人（不含 ? 前缀和 unknown）
+    local suspects
+    suspects=$(grep -v '^?' "$suspect_log" | grep -v '^unknown$' 2>/dev/null)
+
+    if [ -z "$suspects" ]; then
+        bg_log_info "未识别到明确嫌疑模块，需要全部禁用"
+        return 1
+    fi
+
+    local disabled_count=0
+    echo "$suspects" | while read module; do
+        [ -z "$module" ] && continue
+        if [ -d "/data/adb/modules/$module" ]; then
+            if touch "/data/adb/modules/$module/disable" 2>/dev/null; then
+                bg_log_info "已精准禁用嫌疑模块: $module"
+                disabled_count=$((disabled_count + 1))
+            else
+                bg_log_error "无法禁用嫌疑模块: $module"
+            fi
+        fi
+    done
+
+    bg_log_info "精准禁用完成，共禁用嫌疑模块"
+    sync
+    bg_log_info "准备重启系统（精准救砖）..."
+    reboot
+    return 0
+}
+
 # ==================== 嫌疑模块追踪 ====================
 
 # 保存当前模块列表为"已知正常"（每次成功开机后调用）

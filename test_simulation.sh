@@ -96,14 +96,15 @@ for expect in 1 2 3 4 5; do
 done
 
 # ======== 4. case 分支 ========
-section 4 "case 分支 (3→禁用, 5→解冻)"
+section 4 "case 分支 (3→精准禁用, 4→全禁用, 6→解冻)"
 
-for c in 1 2 3 4 5 6; do
-  r=$(sh -c "case $c in 3) echo DISABLE;; 5) echo UNFREEZE;; *) echo NORMAL;; esac")
+for c in 1 2 3 4 5 6 7; do
+  r=$(sh -c "case $c in 3) echo TARGETED;; 4) echo DISABLE_ALL;; 6) echo UNFREEZE;; *) echo NORMAL;; esac")
   case $c in
-    1|2|4|6) [ "$r" = "NORMAL" ]   && ok "count=$c → 正常"   || ng "count=$c: $r" ;;
-    3)       [ "$r" = "DISABLE" ]   && ok "count=3 → 禁用模块" || ng "count=3: $r" ;;
-    5)       [ "$r" = "UNFREEZE" ]  && ok "count=5 → 解冻应用" || ng "count=5: $r" ;;
+    1|2|5|7) [ "$r" = "NORMAL" ]      && ok "count=$c → 正常"       || ng "count=$c: $r" ;;
+    3)       [ "$r" = "TARGETED" ]     && ok "count=3 → 精准禁用"    || ng "count=3: $r" ;;
+    4)       [ "$r" = "DISABLE_ALL" ]  && ok "count=4 → 全禁用"      || ng "count=4: $r" ;;
+    6)       [ "$r" = "UNFREEZE" ]     && ok "count=6 → 解冻应用"    || ng "count=6: $r" ;;
   esac
 done
 

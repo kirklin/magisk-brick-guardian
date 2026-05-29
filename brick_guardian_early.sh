@@ -60,17 +60,32 @@ early_main() {
 
     bg_log_info "当前启动次数: $BOOT_COUNT"
 
-    # 根据启动次数执行不同操作
+    # 根据启动次数执行不同操作（渐进式救砖）
+    # 第3次: 精准禁用嫌疑模块（新装/新启用的）
+    # 第4次: 全部禁用（精准禁用未能解决问题）
+    # 第6次: 解冻所有APP（最后手段）
     case $BOOT_COUNT in
         3)
-            bg_log_warning "第三次启动：准备禁用所有模块"
-            detect_suspect_modules
+            bg_log_warning "第三次启动：尝试精准禁用嫌疑模块"
+            update_rescue_stats
+            if disable_suspect_only; then
+                # 精准禁用成功（已 reboot）
+                :
+            else
+                # 无法识别嫌疑人，直接全部禁用
+                bg_log_warning "无法精准定位，升级为全部禁用"
+                disable_script_dirs
+                disable_all_modules "早期"
+            fi
+            ;;
+        4)
+            bg_log_warning "第四次启动：精准禁用未奏效，禁用所有模块"
             disable_script_dirs
             update_rescue_stats
             disable_all_modules "早期"
             ;;
-        5)
-            bg_log_warning "第五次启动：准备解冻所有应用"
+        6)
+            bg_log_warning "第六次启动：准备解冻所有应用"
             rm -f "$START_LOG"
             sync
             update_rescue_stats

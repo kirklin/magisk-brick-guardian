@@ -40,7 +40,7 @@ run_sh() {
 
 echo ""
 echo "=========================================="
-echo -e "  ${CYAN}Brick Guardian v260529 模拟测试${NC}"
+echo -e "  ${CYAN}Brick Guardian v260530 模拟测试${NC}"
 echo "=========================================="
 
 # ======== 1. Root 检测 ========
@@ -96,15 +96,15 @@ for expect in 1 2 3 4 5; do
 done
 
 # ======== 4. case 分支 ========
-section 4 "case 分支 (3→精准禁用, 4→全禁用, 6→解冻)"
+section 4 "case 分支 (3→精准禁用, 5→全禁用, 7→解冻)"
 
-for c in 1 2 3 4 5 6 7; do
-  r=$(sh -c "case $c in 3) echo TARGETED;; 4) echo DISABLE_ALL;; 6) echo UNFREEZE;; *) echo NORMAL;; esac")
+for c in 1 2 3 4 5 6 7 8; do
+  r=$(sh -c "case $c in 3) echo TARGETED;; 5) echo DISABLE_ALL;; 7) echo UNFREEZE;; *) echo NORMAL;; esac")
   case $c in
-    1|2|5|7) [ "$r" = "NORMAL" ]      && ok "count=$c → 正常"       || ng "count=$c: $r" ;;
-    3)       [ "$r" = "TARGETED" ]     && ok "count=3 → 精准禁用"    || ng "count=3: $r" ;;
-    4)       [ "$r" = "DISABLE_ALL" ]  && ok "count=4 → 全禁用"      || ng "count=4: $r" ;;
-    6)       [ "$r" = "UNFREEZE" ]     && ok "count=6 → 解冻应用"    || ng "count=6: $r" ;;
+    1|2|4|6|8) [ "$r" = "NORMAL" ]      && ok "count=$c → 正常"       || ng "count=$c: $r" ;;
+    3)         [ "$r" = "TARGETED" ]     && ok "count=3 → 精准禁用"    || ng "count=3: $r" ;;
+    5)         [ "$r" = "DISABLE_ALL" ]  && ok "count=5 → 全禁用"      || ng "count=5: $r" ;;
+    7)         [ "$r" = "UNFREEZE" ]     && ok "count=7 → 解冻应用"    || ng "count=7: $r" ;;
   esac
 done
 
@@ -185,10 +185,10 @@ r=$(MOCK_SYS_VER=NEW run_sh "
 section 9 "module.prop"
 
 v=$(grep "^version=" "$SCRIPT_DIR/module.prop" | cut -d= -f2)
-[ "$v" = "v260529" ] && ok "version=$v" || ng "version=$v"
+[ "$v" = "v260530" ] && ok "version=$v" || ng "version=$v"
 
 vc=$(grep "^versionCode=" "$SCRIPT_DIR/module.prop" | cut -d= -f2)
-[ "$vc" = "260529" ] && ok "versionCode=$vc" || ng "versionCode=$vc"
+[ "$vc" = "260530" ] && ok "versionCode=$vc" || ng "versionCode=$vc"
 
 # ^version= 不会匹配 versionCode
 cnt=$(grep "^version=" "$SCRIPT_DIR/module.prop" | wc -l | tr -d ' ')

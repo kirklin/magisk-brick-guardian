@@ -62,8 +62,9 @@ early_main() {
 
     # 根据启动次数执行不同操作（渐进式救砖）
     # 第3次: 精准禁用嫌疑模块（新装/新启用的）
-    # 第4次: 全部禁用（精准禁用未能解决问题）
-    # 第6次: 解冻所有APP（最后手段）
+    # 第4次: 等待精准禁用生效（disable 文件需下次启动才生效）
+    # 第5次: 全部禁用（精准禁用确认未能解决问题）
+    # 第7次: 解冻所有APP（最后手段）
     case $BOOT_COUNT in
         3)
             bg_log_warning "第三次启动：尝试精准禁用嫌疑模块"
@@ -78,14 +79,14 @@ early_main() {
                 disable_all_modules "早期"
             fi
             ;;
-        4)
-            bg_log_warning "第四次启动：精准禁用未奏效，禁用所有模块"
+        5)
+            bg_log_warning "第五次启动：精准禁用未奏效，禁用所有模块"
             disable_script_dirs
             update_rescue_stats
             disable_all_modules "早期"
             ;;
-        6)
-            bg_log_warning "第六次启动：准备解冻所有应用"
+        7)
+            bg_log_warning "第七次启动：准备解冻所有应用"
             rm -f "$START_LOG"
             sync
             update_rescue_stats

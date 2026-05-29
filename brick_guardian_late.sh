@@ -35,7 +35,7 @@ update_module_description() {
         fi
     fi
 
-    local description="渐进式救砖：第3次重启精准禁用嫌疑模块→第4次禁用全部模块→卡开机界面${BOOT_WAIT_TIME}分钟也会触发救砖(OTA后延长至15分钟)→第6次执行APP解冻。模块目录/白名单.conf可添加跳过白名单。GitHub: https://github.com/kirklin/magisk-brick-guardian 已为您自动救砖：${rescue_count}次。${suspect_info}"
+    local description="渐进式救砖：第3次重启精准禁用嫌疑模块→第5次禁用全部模块→卡开机界面${BOOT_WAIT_TIME}分钟也会触发救砖(OTA后延长至15分钟)→第7次执行APP解冻。模块目录/白名单.conf可添加跳过白名单。GitHub: https://github.com/kirklin/magisk-brick-guardian 已为您自动救砖：${rescue_count}次。${suspect_info}"
 
     local temp_file="${MODULE_INFO}.tmp"
     if ! sed "/^description=/c description=$description" "$MODULE_INFO" > "$temp_file"; then

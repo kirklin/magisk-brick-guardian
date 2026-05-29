@@ -40,7 +40,7 @@ run_sh() {
 
 echo ""
 echo "=========================================="
-echo -e "  ${CYAN}Brick Guardian v260530 模拟测试${NC}"
+echo -e "  ${CYAN}Brick Guardian v260531 模拟测试${NC}"
 echo "=========================================="
 
 # ======== 1. Root 检测 ========
@@ -185,10 +185,10 @@ r=$(MOCK_SYS_VER=NEW run_sh "
 section 9 "module.prop"
 
 v=$(grep "^version=" "$SCRIPT_DIR/module.prop" | cut -d= -f2)
-[ "$v" = "v260530" ] && ok "version=$v" || ng "version=$v"
+[ "$v" = "v260531" ] && ok "version=$v" || ng "version=$v"
 
 vc=$(grep "^versionCode=" "$SCRIPT_DIR/module.prop" | cut -d= -f2)
-[ "$vc" = "260530" ] && ok "versionCode=$vc" || ng "versionCode=$vc"
+[ "$vc" = "260531" ] && ok "versionCode=$vc" || ng "versionCode=$vc"
 
 # ^version= 不会匹配 versionCode
 cnt=$(grep "^version=" "$SCRIPT_DIR/module.prop" | wc -l | tr -d ' ')

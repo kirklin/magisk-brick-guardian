@@ -1,7 +1,7 @@
 id=magisk-brick-guardian
 name=Brick Guardian (自动防砖守护)
-version=v260530
-versionCode=260530
+version=v260531
+versionCode=260531
 author=Kirk Lin (https://github.com/kirklin)
 description=模块特性：1)自动检测并防止模块导致的系统无法启动 2)支持智能白名单机制 3)OTA升级保护 4)模块状态查看(点击action按钮) 5)支持 Magisk / KernelSU / KSU Next / APatch。首次启动后请等待1.5分钟以确认模块正常运行。GitHub: https://github.com/kirklin/magisk-brick-guardian
 updateJson=https://raw.githubusercontent.com/kirklin/magisk-brick-guardian/main/update.json
